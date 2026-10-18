@@ -1,0 +1,23 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: adplay-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_dev_pw
+      MYSQL_DATABASE: adplay
+      MYSQL_USER: adplay
+      MYSQL_PASSWORD: adplay_dev_pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Runs once, on first start with an empty volume. The API seeds demo rows on startup (Development).
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/03_sp_search_orders.sql:/docker-entrypoint-initdb.d/03_sp_search_orders.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uadplay", "-padplay_dev_pw"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  mysql-data:
